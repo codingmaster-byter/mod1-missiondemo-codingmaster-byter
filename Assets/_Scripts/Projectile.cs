@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour{
     const int LOOKBACK_COUNT = 10;
+    static List<Projectile> PROJECTILES = new List<Projectile>();  // ADD THIS
 
     [SerializeField]
     private bool _awake = true;
@@ -17,15 +18,25 @@ public class Projectile : MonoBehaviour{
     private Vector3 prevPos;
     private List<float> deltas = new List<float>();
     private Rigidbody rigid;
-    // Start is called before the first frame update
+
     void Start(){
         rigid = GetComponent<Rigidbody>();
         awake = true;
         prevPos = new Vector3(1000,1000,0);
         deltas.Add( 1000 );
+        PROJECTILES.Add( this );  // ADD THIS
     }
 
-    // Update is called once per frame
+    private void OnDestroy() {
+        PROJECTILES.Remove( this );  // ADD THIS
+    }
+
+    static public void DESTROY_PROJECTILES() {  // ADD THIS WHOLE METHOD
+        foreach ( Projectile p in PROJECTILES ) {
+            Destroy( p.gameObject );
+        }
+    }
+
     void FixedUpdate(){
         if (rigid.isKinematic || !awake) return;
 
@@ -37,7 +48,7 @@ public class Projectile : MonoBehaviour{
             deltas.RemoveAt( 0 );
         }
 
-        float maxDelta =0;
+        float maxDelta = 0;
         foreach (float f in deltas){
             if (f > maxDelta) maxDelta = f;
         }
@@ -46,7 +57,5 @@ public class Projectile : MonoBehaviour{
             awake = false;
             rigid.Sleep();
         }
-
-
     }
 }
